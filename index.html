@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Task Manager</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+  transition: 0.3s;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  color: #38bdf8;
+}
+
+input, button, select {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  cursor: pointer;
+  background: #38bdf8;
+  color: black;
+}
+
+li {
+  list-style: none;
+  background: #1e293b;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.progress {
+  margin-top: 20px;
+}
+
+.progress-bar {
+  height: 20px;
+  background: green;
+  width: 0%;
+  border-radius: 10px;
+}
+
+.light-mode {
+  background: #f1f5f9;
+  color: black;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🚀 Smart Task Manager</h1>
+
+<input type="text" id="taskInput" placeholder="Enter task">
+<input type="date" id="dueDate">
+
+<button onclick="addTask()">Add</button>
+<button onclick="toggleMode()">🌙 Mode</button>
+
+<br>
+
+<select id="filter" onchange="filterTasks()">
+  <option value="all">All</option>
+  <option value="completed">Completed</option>
+  <option value="pending">Pending</option>
+</select>
+
+<ul id="taskList"></ul>
+
+<div class="progress">
+  <h3>Progress</h3>
+  <div style="background:#334155; border-radius:10px;">
+    <div id="progressBar" class="progress-bar"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+
+let tasks = [];
+
+function addTask() {
+  let text = document.getElementById("taskInput").value;
+  let date = document.getElementById("dueDate").value;
+
+  if (!text) return alert("Enter a task!");
+
+  let today = new Date();
+  let due = new Date(date);
+  let diff = (due - today) / (1000 * 60 * 60 * 24);
+
+  let priority = diff <= 2 ? "🔥 High" : "✅ Normal";
+
+  let task = {
+    text,
+    priority,
+    completed: false
+  };
+
+  tasks.push(task);
+  renderTasks();
+}
+
+function renderTasks() {
+  let list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  tasks.forEach((task, index) => {
+    let li = document.createElement("li");
+
+    li.className = task.completed ? "completed" : "";
+
+    li.innerHTML = `
+      <span onclick="toggleComplete(${index})">
+        ${task.text} - ${task.priority}
+      </span>
+      <button onclick="deleteTask(${index})">❌</button>
+    `;
+
+    list.appendChild(li);
+  });
+
+  updateProgress();
+}
+
+function deleteTask(index) {
+  tasks.splice(index, 1);
+  renderTasks();
+}
+
+function toggleComplete(index) {
+  tasks[index].completed = !tasks[index].completed;
+  renderTasks();
+}
+
+function updateProgress() {
+  let completed = tasks.filter(t => t.completed).length;
+  let total = tasks.length;
+
+  let percent = total === 0 ? 0 : (completed / total) * 100;
+
+  document.getElementById("progressBar").style.width = percent + "%";
+}
+
+function toggleMode() {
+  document.body.classList.toggle("light-mode");
+}
+
+function filterTasks() {
+  let filter = document.getElementById("filter").value;
+
+  let list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  tasks.forEach((task, index) => {
+    if (
+      filter === "all" ||
+      (filter === "completed" && task.completed) ||
+      (filter === "pending" && !task.completed)
+    ) {
+      let li = document.createElement("li");
+
+      li.className = task.completed ? "completed" : "";
+
+      li.innerHTML = `
+        <span onclick="toggleComplete(${index})">
+          ${task.text} - ${task.priority}
+        </span>
+        <button onclick="deleteTask(${index})">❌</button>
+      `;
+
+      list.appendChild(li);
+    }
+  });
+}
+
+</script>
+
+</body>
+</html>
